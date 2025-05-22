@@ -40,7 +40,7 @@
 
             // Dummy data for demonstration - Updated to be more diverse
             const artistData = {
-                // Updated to use a placeholder image URL
+                // Using a placeholder image URL for the mural
                 muralImage: "https://placehold.co/600x400/8A2BE2/FFFFFF?text=March+of+the+Flowers",
                 muralTitle: "March of the Flowers",
                 location: "Pilsen",
@@ -193,6 +193,7 @@
                             <span className="ml-2 text-lg font-semibold">Back</span>
                         </div>
 
+                        {/* Using placeholder for mural image */}
                         <img src={artistData.muralImage} alt={artistData.muralTitle} className="w-full h-auto rounded-lg mb-4 object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/A7D9C6/333333?text=Image+Not+Found"; }} />
                         <div className="w-full text-left mb-4">
                             <h2 className="text-2xl font-bold mb-1">{artistData.muralTitle}</h2>
@@ -326,7 +327,7 @@
                         </div>
 
                         <div className="w-full h-64 bg-gray-200 rounded-lg mb-4 flex items-center justify-center text-gray-500 text-sm relative overflow-hidden">
-                            {/* Static image of Chicago map - UPDATED to use a reliable placeholder */}
+                            {/* Using a placeholder image for the map */}
                             <img src="https://placehold.co/600x400/ADD8E6/000000?text=Chicago+Map" alt="Map of Chicago" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x256/E0E0E0/666666?text=Map+Not+Available"; }} />
                             {/* Dynamically place pins based on filteredMurals (simplified visual) */}
                             {filteredMurals.map((mural, index) => (
@@ -405,7 +406,7 @@
                     </div>
 
                     <div className="flex flex-col items-center text-center flex-grow justify-center px-4">
-                        {/* Logo Integration - Updated to use a placeholder image URL */}
+                        {/* Logo Integration - Using a placeholder image for the logo */}
                         <img src="https://placehold.co/128x128/2D404A/FFFFFF?text=Common+Canvas+Logo" alt="Common Canvas Logo" className="w-32 h-auto mb-6" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/128x128/FFFFFF/000000?text=Logo"; }} />
 
                         <h1 className="text-4xl font-extrabold mb-6">COMMON CANVAS</h1>
