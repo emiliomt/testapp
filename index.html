@@ -1,718 +1,738 @@
-import React, { useState } from 'react';
-
-// Main App component
-const App = () => {
-  const [currentPage, setCurrentPage] = useState('artistProfile'); // State to manage current page view
-  const [isFollowing, setIsFollowing] = useState(false); // State for "Follow the Artist" feature
-
-  // Gemini API constants
-  const apiKey = ""; // Canvas will provide this at runtime
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-  // Dummy data for demonstration - Updated to be more diverse
-  const artistData = {
-    muralImage: "1_6r1odETNtki7pSmbzZ7kjQ-3834700272.jpeg", // Updated to new image
-    muralTitle: "March of the Flowers",
-    location: "Pilsen",
-    distance: "0.4 mi",
-    artistName: "Rachel Thompson",
-    artistBio: "Rachel Thompson is a muralist and painter based in Chicago. Her work explores themes of nature, color, and community. Her vibrant use of color and dynamic compositions bring life to urban spaces, often incorporating elements of local flora and fauna. She believes art can transform public spaces into vibrant dialogues.",
-    website: "https://www.rachelthompsonart.com",
-    socialLinks: [
-      { name: "Instagram", url: "#" },
-      { name: "Twitter", url: "#" },
-      { name: "Facebook", url: "#" },
-    ],
-    commissions: true,
-    workshops: true,
-    muralBackstory: "This mural was inspired by the resilience of nature in urban environments, celebrating the beauty found in unexpected places. It took Rachel three months to complete, working with local community volunteers to ensure the design resonated with the neighborhood's spirit.",
-  };
-
-  const muralsData = [
-    {
-      id: 'mural1',
-      name: 'March of the Flowers',
-      artist: 'Rachel Thompson',
-      neighborhood: 'Pilsen',
-      theme: 'Nature, Community, Renewal',
-      socialIssue: 'Urban Greening, Community Engagement',
-      description: 'A vibrant mural depicting blooming flowers, symbolizing growth and renewal within the urban landscape.',
-      backstory: 'This mural was created to bring more color and life to the Pilsen neighborhood, funded by a local community grant and supported by numerous volunteers.',
-      imageUrl: "https://placehold.co/300x200/A7D9C6/333333?text=March+of+the+Flowers",
-      lat: 41.85,
-      lng: -87.67,
-    },
-    {
-      id: 'mural2',
-      name: 'Cityscape Harmony',
-      artist: 'John Doe',
-      neighborhood: 'West Town',
-      theme: 'Urban Life, Abstract, Connection',
-      socialIssue: 'Community Connection, Urban Development',
-      description: 'An abstract representation of city life, blending diverse architectural elements and human figures into a harmonious whole.',
-      backstory: 'Commissioned by the West Town Arts Council, this mural aims to foster a sense of unity and shared identity among residents, reflecting the dynamic energy of the area.',
-      imageUrl: "https://placehold.co/300x200/C6D9A7/333333?text=Cityscape+Harmony",
-      lat: 41.90,
-      lng: -87.68,
-    },
-    {
-      id: 'mural3',
-      name: 'River of Dreams',
-      artist: 'Jane Smith',
-      neighborhood: 'Lower West Side',
-      theme: 'Dreams, Fantasy, Aspiration',
-      socialIssue: 'Youth Empowerment, Creative Expression',
-      description: 'A whimsical mural depicting a flowing river made of dreams and aspirations, with fantastical creatures guiding the way.',
-      backstory: 'Painted with the help of local youth, this mural encourages young people to pursue their dreams and highlights the importance of imagination in overcoming challenges.',
-      imageUrl: "https://placehold.co/300x200/D9C6A7/333333?text=River+of+Dreams",
-      lat: 41.84,
-      lng: -87.69,
-    },
-    {
-      id: 'mural4',
-      name: 'Bronzeville Legends',
-      artist: 'Marcus Green',
-      neighborhood: 'Bronzeville',
-      theme: 'History, Culture, Heritage',
-      socialIssue: 'Historical Preservation, Racial Justice',
-      description: 'A powerful tribute to the African American leaders and artists who shaped the Bronzeville community.',
-      backstory: 'This mural was created as part of a historical preservation project, celebrating the rich cultural heritage of Bronzeville and educating new generations.',
-      imageUrl: "https://placehold.co/300x200/B0E0E6/333333?text=Bronzeville+Legends",
-      lat: 41.82,
-      lng: -87.62,
-    },
-    {
-      id: 'mural5',
-      name: 'Logan Square Blooms',
-      artist: 'Sofia Rodriguez',
-      neighborhood: 'Logan Square',
-      theme: 'Nature, Urban Oasis, Growth',
-      socialIssue: 'Community Beautification, Environmental Awareness',
-      description: 'A vibrant floral mural that transforms a drab wall into a lush urban garden, attracting pollinators and people alike.',
-      backstory: 'Commissioned by a local community garden initiative, this mural aims to raise awareness about urban ecology and the importance of green spaces.',
-      imageUrl: "https://placehold.co/300x200/DDA0DD/333333?text=Logan+Square+Blooms",
-      lat: 41.92,
-      lng: -87.70,
-    },
-  ];
-
-  const businessesData = [
-    { name: "Grove Coffee", type: "Café", distance: "0.2 mi", rating: "4.5 (210)", discount: "10% off any coffee", tipLink: "#" },
-    { name: "Page Turners", type: "Bookstore", distance: "0.3 mi", rating: "4.3 (85)", discount: "Free bookmark with purchase", tipLink: "#" },
-    { name: "Green Leaf Market", type: "Grocery", distance: "0.4 mi", rating: "4.4 (130)", discount: "5% off organic produce", tipLink: "#" },
-    { name: "Style Cuts Salon", type: "Salon", distance: "0.5 mi", rating: "4.7 (150)", discount: "15% off first haircut", tipLink: "#" },
-  ];
-
-  const toursData = [
-    {
-      id: 'tour1',
-      title: 'Latinx Stories in Pilsen',
-      theme: 'Culture, History',
-      description: 'Explore the rich Latinx heritage of Pilsen through its vibrant murals. This tour highlights key artworks and their historical significance.',
-      audioUrl: '#', // Placeholder for audio
-      artistInterview: 'Interview with local Pilsen artists on their inspirations.',
-      checkins: 5,
-      completed: false,
-      generatedDescription: '', // To store generated description
-      loadingDescription: false, // Loading state for description generation
-    },
-    {
-      id: 'tour2',
-      title: 'West Town Abstract Art Walk',
-      theme: 'Art, Modern',
-      description: 'Discover the contemporary and abstract murals that define West Town\'s artistic landscape.',
-      audioUrl: '#',
-      artistInterview: 'Insights from artists pushing the boundaries of urban art.',
-      checkins: 4,
-      completed: false,
-      generatedDescription: '',
-      loadingDescription: false,
-    },
-    {
-      id: 'tour3',
-      title: 'Bronzeville Heritage Trail',
-      theme: 'History, Civil Rights',
-      description: 'A journey through Bronzeville\'s historic murals, commemorating its role in the Great Migration and Civil Rights movement.',
-      audioUrl: '#',
-      artistInterview: 'Discussions with historians and local artists about the impact of these murals.',
-      checkins: 6,
-      completed: false,
-      generatedDescription: '',
-      loadingDescription: false,
-    },
-  ];
-
-  // Component for the Artist Profile and Portfolio
-  const ArtistProfile = () => {
-    const handleFollowToggle = () => {
-      setIsFollowing(!isFollowing);
-      // In a real app, this would trigger a notification system
-      if (!isFollowing) {
-        console.log(`You are now following ${artistData.artistName}!`);
-      } else {
-        console.log(`You have unfollowed ${artistData.artistName}.`);
-      }
-    };
-
-    return (
-      <div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
-        <div className="w-full flex justify-start items-center mb-4">
-          <button onClick={() => setCurrentPage('muralsMap')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-          </button>
-          <span className="ml-2 text-lg font-semibold">Back</span>
-        </div>
-
-        <img src={artistData.muralImage} alt={artistData.muralTitle} className="w-full h-auto rounded-lg mb-4 object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/A7D9C6/333333?text=Image+Not+Found"; }} />
-        <div className="w-full text-left mb-4">
-          <h2 className="text-2xl font-bold mb-1">{artistData.muralTitle}</h2>
-          <p className="text-gray-600 text-sm">{artistData.location} • {artistData.distance}</p>
-          <p className="text-gray-700 text-sm mt-2 font-medium">Mural Backstory:</p>
-          <p className="text-gray-600 text-sm">{artistData.muralBackstory}</p>
-        </div>
-
-        <div className="w-full text-left mb-6">
-          <h3 className="text-lg font-semibold mb-2">Artist</h3>
-          <div className="flex items-center mb-2">
-            <div className="w-10 h-10 bg-blue-200 text-blue-800 flex items-center justify-center rounded-full font-bold mr-3">
-              {artistData.artistName.split(' ').map(n => n[0]).join('')}
-            </div>
-            <div>
-              <p className="font-medium text-lg">{artistData.artistName}</p>
-              <p className="text-gray-700 text-sm">{artistData.artistBio}</p>
-            </div>
-          </div>
-          <a href={artistData.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm block mt-2">Website</a>
-          <div className="mt-2">
-            {artistData.socialLinks.map((link, index) => (
-              <a key={index} href={link.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm mr-4">
-                {link.name}
-              </a>
-            ))}
-          </div>
-          {artistData.commissions && (
-            <p className="text-green-700 text-sm mt-2">Open for Commissions</p>
-          )}
-          {artistData.workshops && (
-            <p className="text-purple-700 text-sm">Offering Workshops</p>
-          )}
-        </div>
-
-        <button
-          onClick={handleFollowToggle}
-          className={`w-full py-3 rounded-full font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${isFollowing ? 'bg-gray-400 text-white hover:bg-gray-500 focus:ring-gray-300' : 'bg-[#FF69B4] text-white hover:bg-[#E05C9F] focus:ring-[#FF69B4]'}`}
-        >
-          {isFollowing ? 'FOLLOWING' : 'FOLLOW ARTIST'}
-        </button>
-        {isFollowing && (
-          <p className="text-green-600 text-xs mt-2">You'll receive notifications for new work and events!</p>
-        )}
-      </div>
-    );
-  };
-
-  // Component for the Murals Map and Nearby listings
-  const MuralsMap = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all'); // 'all', 'neighborhood', 'artist', 'theme', 'socialIssue'
-    const [muralExplanations, setMuralExplanations] = useState({}); // Stores generated explanations
-    const [loadingMuralId, setLoadingMuralId] = useState(null); // Stores ID of mural currently loading explanation
-
-    const filteredMurals = muralsData.filter(mural => {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      const matchesSearch =
-        mural.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        mural.artist.toLowerCase().includes(lowerCaseSearchTerm) ||
-        mural.neighborhood.toLowerCase().includes(lowerCaseSearchTerm) ||
-        mural.theme.toLowerCase().includes(lowerCaseSearchTerm) ||
-        mural.socialIssue.toLowerCase().includes(lowerCaseSearchTerm);
-
-      if (filterType === 'all') {
-        return matchesSearch;
-      } else {
-        return matchesSearch && mural[filterType].toLowerCase().includes(lowerCaseSearchTerm);
-      }
-    });
-
-    // Function to fetch theme explanation using Gemini API
-    const fetchThemeExplanation = async (muralId, theme) => {
-      setLoadingMuralId(muralId);
-      try {
-        let chatHistory = [];
-        chatHistory.push({ role: "user", parts: [{ text: `Explain the theme "${theme}" in the context of urban murals in a concise and engaging way.` }] });
-        const payload = { contents: chatHistory };
-
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
-          const text = result.candidates[0].content.parts[0].text;
-          setMuralExplanations(prev => ({ ...prev, [muralId]: text }));
-        } else {
-          setMuralExplanations(prev => ({ ...prev, [muralId]: "Could not generate explanation." }));
-        }
-      } catch (error) {
-        console.error("Error fetching theme explanation:", error);
-        setMuralExplanations(prev => ({ ...prev, [muralId]: "Error generating explanation." }));
-      } finally {
-        setLoadingMuralId(null);
-      }
-    };
-
-    return (
-      <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
-        <div className="w-full flex justify-start items-center mb-4">
-          <button onClick={() => setCurrentPage('missionStatement')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-          </button>
-          <span className="ml-2 text-lg font-semibold">Murals</span>
-        </div>
-
-        <div className="w-full mb-4">
-          <input
-            type="text"
-            placeholder="Search murals (neighborhood, artist, theme...)"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF69B4]"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="flex flex-wrap gap-2 mt-2">
-            {['all', 'neighborhood', 'artist', 'theme', 'socialIssue'].map(type => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`px-3 py-1 text-xs rounded-full ${filterType === type ? 'bg-[#FF69B4] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="w-full h-64 bg-gray-200 rounded-lg mb-4 flex items-center justify-center text-gray-500 text-sm relative overflow-hidden">
-          {/* Static image of Chicago map - UPDATED to use image_b51a81.png */}
-          <img src="image_b51a81.png" alt="Map of Chicago" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x256/E0E0E0/666666?text=Map+Not+Available"; }} />
-          {/* Dynamically place pins based on filteredMurals (simplified visual) */}
-          {filteredMurals.map((mural, index) => (
-            <div
-              key={mural.id}
-              className="absolute w-3 h-3 bg-[#FFD700] rounded-full border border-white" // Using yellow for pins
-              style={{
-                top: `${20 + (index * 15) % 60}%`, // Distribute pins visually
-                left: `${30 + (index * 20) % 50}%`,
-              }}
-              title={`${mural.name} by ${mural.artist} (${mural.neighborhood})`}
-            ></div>
-          ))}
-        </div>
-
-        <div className="w-full text-left mb-6">
-          <h3 className="text-lg font-semibold mb-2">Mural Listings</h3>
-          {filteredMurals.length > 0 ? (
-            <ul className="space-y-3">
-              {filteredMurals.map(mural => (
-                <li key={mural.id} className="p-3 border border-gray-200 rounded-lg">
-                  <h4 className="font-bold text-lg">{mural.name}</h4>
-                  <p className="text-gray-700 text-sm">Artist: <span className="text-[#FF69B4] cursor-pointer" onClick={() => setCurrentPage('artistProfile')}>{mural.artist}</span></p>
-                  <p className="text-gray-700 text-sm">Neighborhood: {mural.neighborhood}</p>
-                  <p className="text-gray-700 text-sm">Theme: {mural.theme}</p>
-                  <p className="text-gray-700 text-sm">Social Issue: {mural.socialIssue}</p>
-                  <p className="text-gray-600 text-sm mt-1">{mural.description}</p>
-                  <p className="text-gray-600 text-xs mt-1 italic">Backstory: {mural.backstory}</p>
-                  <button
-                    onClick={() => fetchThemeExplanation(mural.id, mural.theme)}
-                    className="mt-2 px-3 py-1 bg-[#7FFF00] text-[#2D404A] text-xs rounded-full hover:bg-[#6EE300] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#7FFF00]"
-                    disabled={loadingMuralId === mural.id}
-                  >
-                    {loadingMuralId === mural.id ? 'Loading...' : '✨ Explain Theme'}
-                  </button>
-                  {muralExplanations[mural.id] && (
-                    <p className="text-gray-800 text-sm mt-2 p-2 bg-green-50 rounded-md border border-green-200">
-                      <span className="font-semibold">Theme Explanation:</span> {muralExplanations[mural.id]}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">No murals found matching your search.</p>
-          )}
-
-          <h3 className="text-lg font-semibold mb-2 mt-6">Local Business Integration</h3>
-          <p className="text-[#FF69B4] text-sm mb-3">Businesses Near Murals</p>
-          {businessesData.map((business, index) => (
-            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-              <div>
-                <p className="font-medium text-base">{business.name} ({business.type})</p>
-                <p className="text-gray-600 text-sm">★★★★★ {business.rating}</p>
-                <p className="text-green-700 text-sm font-semibold">Discount: {business.discount}</p>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-gray-500 text-sm">{business.distance}</span>
-                <a href={business.tipLink} className="text-[#FF69B4] text-sm hover:underline mt-1">Support Local</a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Component for the Mission Statement
-  const MissionStatement = () => (
-    <div className="flex flex-col items-center p-4 bg-[#2D404A] text-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter min-h-[500px] justify-between">
-      <div className="w-full flex justify-start items-center mb-4">
-        <button onClick={() => setCurrentPage('muralsMap')} className="text-white hover:text-gray-300 focus:outline-none">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-        <span className="ml-2 text-lg font-semibold">Mission Statement</span>
-      </div>
-
-      <div className="flex flex-col items-center text-center flex-grow justify-center px-4">
-        {/* Logo Integration */}
-        <img src="image_b4bce2.png" alt="Common Canvas Logo" className="w-32 h-auto mb-6" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/128x128/FFFFFF/000000?text=Logo"; }} />
-
-        <h1 className="text-4xl font-extrabold mb-6">COMMON CANVAS</h1>
-        <p className="text-lg leading-relaxed mb-8">
-          Common Canvas brings people together through community murals. We support local artists and foster public art that celebrates creativity and diversity.
-        </p>
-      </div>
-
-      <div className="w-full flex flex-col items-center space-y-4 pb-4">
-        <button className="w-full bg-[#FFD700] text-[#2D404A] py-3 rounded-full font-semibold hover:bg-[#E0B800] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-opacity50">
-          Donate
-        </button>
-        <button className="w-full bg-[#FF69B4] text-white py-3 rounded-full font-semibold hover:bg-[#E05C9F] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF69B4] focus:ring-opacity-50">
-          Join a Community Mural
-        </button>
-        {/* Tagline */}
-        <p className="text-sm italic mt-4">Your Story, Our City, One Wall at a Time.</p>
-      </div>
-    </div>
-  );
-
-  // Component for Community Grant & Crowdfunding Hub
-  const GrantHub = () => (
-    <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
-      <div className="w-full flex justify-start items-center mb-4">
-        <button onClick={() => setCurrentPage('artistProfile')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-        <span className="ml-2 text-lg font-semibold">Grant & Crowdfunding</span>
-      </div>
-
-      <h2 className="text-2xl font-bold mb-4 text-center">Community Grant & Crowdfunding Hub</h2>
-
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-        <h3 className="text-xl font-semibold mb-2">Apply for a Grant</h3>
-        <p className="text-gray-700 mb-4">Artists can apply for various grants to fund their mural projects. Review criteria and submit your proposal.</p>
-        <button className="w-full bg-[#7FFF00] text-[#2D404A] py-2 rounded-full font-semibold hover:bg-[#6EE300] transition duration-300">
-          Apply Now
-        </button>
-      </div>
-
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-        <h3 className="text-xl font-semibold mb-2">Raise Funds for Your Mural</h3>
-        <p className="text-gray-700 mb-4">Create a crowdfunding campaign for your next mural. Share your vision and get support from the community.</p>
-        <button className="w-full bg-[#FFA500] text-white py-2 rounded-full font-semibold hover:bg-[#E09400] transition duration-300">
-          Start a Campaign
-        </button>
-      </div>
-
-      <div className="p-4 border border-gray-200 rounded-lg">
-        <h3 className="text-xl font-semibold mb-2">Active Campaigns</h3>
-        <ul className="space-y-3">
-          <li className="flex justify-between items-center">
-            <div>
-              <p className="font-medium">"Harmony Wall" by Jane Doe</p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                <div className="bg-[#FF69B4] h-2.5 rounded-full" style={{width: '75%'}}></div>
-              </div>
-              <p className="text-sm text-gray-600">$7,500 of $10,000 raised</p>
-            </div>
-            <span className="text-[#FF69B4] font-semibold">75%</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <div>
-              <p className="font-medium">"Cityscape Dream" by John Smith</p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                <div className="bg-[#FF69B4] h-2.5 rounded-full" style={{width: '40%'}}></div>
-              </div>
-              <p className="text-sm text-gray-600">$2,000 of $5,000 raised</p>
-            </div>
-            <span className="text-[#FF69B4] font-semibold">40%</span>
-          </li>
-        </ul>
-        <button className="w-full mt-4 bg-gray-200 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300">
-          View All Campaigns
-        </button>
-      </div>
-    </div>
-  );
-
-  // Component for Neighborhood Activity Dashboard
-  const ActivityDashboard = () => (
-    <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
-      <div className="w-full flex justify-start items-center mb-4">
-        <button onClick={() => setCurrentPage('artistProfile')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-          </button>
-        <span className="ml-2 text-lg font-semibold">Activity Dashboard</span>
-      </div>
-
-      <h2 className="text-2xl font-bold mb-4 text-center">Neighborhood Activity Dashboard</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="p-4 border border-gray-200 rounded-lg text-center">
-          <h3 className="text-lg font-semibold text-[#FF69B4]">New Installations</h3>
-          <p className="text-4xl font-bold mt-2">12</p>
-          <p className="text-gray-600 text-sm">Last Quarter</p>
-        </div>
-        <div className="p-4 border border-gray-200 rounded-lg text-center">
-          <h3 className="text-lg font-semibold text-[#7FFF00]">Total Murals</h3>
-          <p className="text-4xl font-bold mt-2">85</p>
-          <p className="text-gray-600 text-sm">Across City</p>
-        </div>
-        <div className="p-4 border border-gray-200 rounded-lg text-center">
-          <h3 className="text-lg font-semibold text-[#FFA500]">Engagement Score</h3>
-          <p className="text-4xl font-bold mt-2">7.8</p>
-          <p className="text-gray-600 text-sm">Out of 10</p>
-        </div>
-        <div className="p-4 border border-gray-200 rounded-lg text-center">
-          <h3 className="text-lg font-semibold text-[#FFD700]">Foot Traffic Increase</h3>
-          <p className="text-4xl font-bold mt-2">15%</p>
-          <p className="text-gray-600 text-sm">Near Murals</p>
-        </div>
-      </div>
-
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-        <h3 className="text-xl font-semibold mb-2">Mural Installations by Neighborhood</h3>
-        <ul className="space-y-2">
-          <li className="flex justify-between items-center">
-            <span className="font-medium">Pilsen</span>
-            <span className="text-gray-700">18 Murals</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="font-medium">West Town</span>
-            <span className="text-gray-700">15 Murals</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="font-medium">Lower West Side</span>
-            <span className="text-gray-700">12 Murals</span>
-           </li>
-          <li className="flex justify-between items-center">
-            <span className="font-medium">Near South Side</span>
-            <span className="text-gray-700">10 Murals</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="font-medium">Bronzeville</span>
-            <span className="text-gray-700">9 Murals</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="font-medium">Logan Square</span>
-            <span className="text-gray-700">11 Murals</span>
-          </li>
-        </ul>
-      </div>
-
-      <div className="p-4 border border-gray-200 rounded-lg">
-        <h3 className="text-xl font-semibold mb-2">Local Business Activity Impact</h3>
-        <p className="text-gray-700 mb-2">Data indicates a positive correlation between mural installations and increased local business revenue.</p>
-        <ul className="list-disc list-inside text-gray-700">
-          <li>Average 8% increase in revenue for businesses within 0.5 miles of a new mural.</li>
-          <li>Increased foot traffic leads to more customer engagement.</li>
-        </ul>
-        <button className="w-full mt-4 bg-[#FF69B4] text-white py-2 rounded-full font-semibold hover:bg-[#E05C9F] transition duration-300">
-          View Detailed Report
-        </button>
-      </div>
-    </div>
-  );
-
-  // Component for Self-Guided Mural Tours
-  const SelfGuidedTours = () => {
-    const [completedBadges, setCompletedBadges] = useState([]);
-    const [tours, setTours] = useState(toursData); // Use state to manage tours data for generated descriptions
-
-    const handleCheckIn = (tourId) => {
-      if (!completedBadges.includes(tourId)) {
-        setCompletedBadges([...completedBadges, tourId]);
-        console.log(`Congratulations! You earned a badge for completing a section of tour ${tourId}!`);
-      } else {
-        console.log(`You've already checked in for this section of tour ${tourId}.`);
-      }
-    };
-
-    // Function to fetch tour description using Gemini API
-    const fetchTourDescription = async (tourId, title, theme, description) => {
-      setTours(prevTours => prevTours.map(tour =>
-        tour.id === tourId ? { ...tour, loadingDescription: true } : tour
-      ));
-      try {
-        let chatHistory = [];
-        chatHistory.push({ role: "user", parts: [{ text: `Generate a more engaging and detailed description for a self-guided mural tour titled "${title}" with the theme "${theme}". The current description is: "${description}". Make it appealing to art enthusiasts and tourists.` }] });
-        const payload = { contents: chatHistory };
-
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
-          const text = result.candidates[0].content.parts[0].text;
-          setTours(prevTours => prevTours.map(tour =>
-            tour.id === tourId ? { ...tour, generatedDescription: text } : tour
-          ));
-        } else {
-          setTours(prevTours => prevTours.map(tour =>
-            tour.id === tourId ? { ...tour, generatedDescription: "Could not generate description." } : tour
-          ));
-        }
-      } catch (error) {
-        console.error("Error fetching tour description:", error);
-        setTours(prevTours => prevTours.map(tour =>
-          tour.id === tourId ? { ...tour, generatedDescription: "Error generating description." } : tour
-        ));
-      } finally {
-        setTours(prevTours => prevTours.map(tour =>
-          tour.id === tourId ? { ...tour, loadingDescription: false } : tour
-        ));
-      }
-    };
-
-    return (
-      <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
-        <div className="w-full flex justify-start items-center mb-4">
-          <button onClick={() => setCurrentPage('muralsMap')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-          </button>
-          <span className="ml-2 text-lg font-semibold">Self-Guided Tours</span>
-        </div>
-
-        <h2 className="text-2xl font-bold mb-4 text-center">Self-Guided Mural Tours</h2>
-
-        {tours.map(tour => (
-          <div key={tour.id} className="mb-6 p-4 border border-gray-200 rounded-lg">
-            <h3 className="text-xl font-semibold mb-2">{tour.title}</h3>
-            <p className="text-gray-700 text-sm mb-2">Theme: {tour.theme}</p>
-            <p className="text-gray-600 mb-3">{tour.description}</p>
-            {tour.generatedDescription && (
-              <p className="text-gray-800 text-sm mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
-                <span className="font-semibold">Generated Description:</span> {tour.generatedDescription}
-              </p>
-            )}
-            <button
-              onClick={() => fetchTourDescription(tour.id, tour.title, tour.theme, tour.description)}
-              className="mt-2 px-3 py-1 bg-[#7FFF00] text-[#2D404A] text-xs rounded-full hover:bg-[#6EE300] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#7FFF00]"
-              disabled={tour.loadingDescription}
-            >
-              {tour.loadingDescription ? 'Generating...' : '✨ Generate Tour Description'}
-            </button>
-            <div className="flex items-center mt-3 mb-3">
-              <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2zm0 0H6a2 2 0 00-2 2v13a2 2 0 002 2h3m2-12l-3-3m3 3l3 3m-3-3l-3 3m3-3v3m0 0l-3-3m3 3l3 3m-3-3v-3"></path></svg>
-              <a href={tour.audioUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF69B4] hover:underline text-sm">Listen to Audio Narration</a>
-            </div>
-            <p className="text-gray-700 text-sm mb-3">Artist Interview: {tour.artistInterview}</p>
-            <button
-              onClick={() => handleCheckIn(tour.id)}
-              className={`w-full py-2 rounded-full font-semibold transition duration-300 ${completedBadges.includes(tour.id) ? 'bg-green-500 text-white' : 'bg-[#FFA500] text-white hover:bg-[#E09400]'}`}
-            >
-              {completedBadges.includes(tour.id) ? 'Checked In! (Badge Earned)' : `Check-in (${tour.checkins} points)`}
-            </button>
-          </div>
-        ))}
-        <div className="mt-4 p-4 border border-gray-200 rounded-lg text-center">
-          <h3 className="text-xl font-semibold mb-2">Your Badges</h3>
-          {completedBadges.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-3">
-              {completedBadges.map(badgeId => (
-                <div key={badgeId} className="bg-[#FFD700] p-2 rounded-full text-[#2D404A] font-bold text-xs shadow-md">
-                  {toursData.find(t => t.id === badgeId)?.title.split(' ').map(n => n[0]).join('')} Badge
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">Complete tours to earn badges!</p>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4 font-inter">
-      {/* Global Navigation */}
-      <div className="w-full max-w-full flex justify-around p-3 bg-white rounded-full shadow-lg mb-6">
-        <button
-          onClick={() => setCurrentPage('artistProfile')}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'artistProfile' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-        >
-          Artist Profile
-        </button>
-        <button
-          onClick={() => setCurrentPage('muralsMap')}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'muralsMap' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-        >
-          Murals Map
-        </button>
-        <button
-          onClick={() => setCurrentPage('missionStatement')}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'missionStatement' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-        >
-          Mission
-        </button>
-        <button
-          onClick={() => setCurrentPage('grantHub')}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'grantHub' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-        >
-          Grants
-        </button>
-        <button
-          onClick={() => setCurrentPage('activityDashboard')}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'activityDashboard' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-        >
-          Dashboard
-        </button>
-        <button
-          onClick={() => setCurrentPage('selfGuidedTours')}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'selfGuidedTours' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-        >
-          Tours
-        </button>
-      </div>
-
-      {/* Render current page based on state */}
-      {currentPage === 'artistProfile' && <ArtistProfile />}
-      {currentPage === 'muralsMap' && <MuralsMap />}
-      {currentPage === 'missionStatement' && <MissionStatement />}
-      {currentPage === 'grantHub' && <GrantHub />}
-      {currentPage === 'activityDashboard' && <ActivityDashboard />}
-      {currentPage === 'selfGuidedTours' && <SelfGuidedTours />}
-
-      {/* Tailwind CSS CDN */}
-      <script src="https://cdn.tailwindcss.com"></script>
-      {/* Google Fonts - Inter */}
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-      <style>
-        {`
-          body {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common Canvas Murals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
             font-family: 'Inter', sans-serif;
-          }
-        `}
-      </style>
-    </div>
-  );
-};
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        #root {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items to the top, allowing content to flow down */
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-export default App;
+    <script type="text/babel">
+        const App = () => {
+            const [currentPage, setCurrentPage] = React.useState('artistProfile');
+            const [isFollowing, setIsFollowing] = React.useState(false);
+
+            // Gemini API constants
+            const apiKey = ""; // Canvas will provide this at runtime
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            // Dummy data for demonstration - Updated to be more diverse
+            const artistData = {
+                muralImage: "1_6r1odETNtki7pSmbzZ7kjQ-3834700272.jpeg", // Updated to new image
+                muralTitle: "March of the Flowers",
+                location: "Pilsen",
+                distance: "0.4 mi",
+                artistName: "Rachel Thompson",
+                artistBio: "Rachel Thompson is a muralist and painter based in Chicago. Her work explores themes of nature, color, and community. Her vibrant use of color and dynamic compositions bring life to urban spaces, often incorporating elements of local flora and fauna. She believes art can transform public spaces into vibrant dialogues.",
+                website: "https://www.rachelthompsonart.com",
+                socialLinks: [
+                    { name: "Instagram", url: "#" },
+                    { name: "Twitter", url: "#" },
+                    { name: "Facebook", url: "#" },
+                ],
+                commissions: true,
+                workshops: true,
+                muralBackstory: "This mural was inspired by the resilience of nature in urban environments, celebrating the beauty found in unexpected places. It took Rachel three months to complete, working with local community volunteers to ensure the design resonated with the neighborhood's spirit.",
+            };
+
+            const muralsData = [
+                {
+                    id: 'mural1',
+                    name: 'March of the Flowers',
+                    artist: 'Rachel Thompson',
+                    neighborhood: 'Pilsen',
+                    theme: 'Nature, Community, Renewal',
+                    socialIssue: 'Urban Greening, Community Engagement',
+                    description: 'A vibrant mural depicting blooming flowers, symbolizing growth and renewal within the urban landscape.',
+                    backstory: 'This mural was created to bring more color and life to the Pilsen neighborhood, funded by a local community grant and supported by numerous volunteers.',
+                    imageUrl: "https://placehold.co/300x200/A7D9C6/333333?text=March+of+the+Flowers",
+                    lat: 41.85,
+                    lng: -87.67,
+                },
+                {
+                    id: 'mural2',
+                    name: 'Cityscape Harmony',
+                    artist: 'John Doe',
+                    neighborhood: 'West Town',
+                    theme: 'Urban Life, Abstract, Connection',
+                    socialIssue: 'Community Connection, Urban Development',
+                    description: 'An abstract representation of city life, blending diverse architectural elements and human figures into a harmonious whole.',
+                    backstory: 'Commissioned by the West Town Arts Council, this mural aims to foster a sense of unity and shared identity among residents, reflecting the dynamic energy of the area.',
+                    imageUrl: "https://placehold.co/300x200/C6D9A7/333333?text=Cityscape+Harmony",
+                    lat: 41.90,
+                    lng: -87.68,
+                },
+                {
+                    id: 'mural3',
+                    name: 'River of Dreams',
+                    artist: 'Jane Smith',
+                    neighborhood: 'Lower West Side',
+                    theme: 'Dreams, Fantasy, Aspiration',
+                    socialIssue: 'Youth Empowerment, Creative Expression',
+                    description: 'A whimsical mural depicting a flowing river made of dreams and aspirations, with fantastical creatures guiding the way.',
+                    backstory: 'Painted with the help of local youth, this mural encourages young people to pursue their dreams and highlights the importance of imagination in overcoming challenges.',
+                    imageUrl: "https://placehold.co/300x200/D9C6A7/333333?text=River+of+Dreams",
+                    lat: 41.84,
+                    lng: -87.69,
+                },
+                {
+                    id: 'mural4',
+                    name: 'Bronzeville Legends',
+                    artist: 'Marcus Green',
+                    neighborhood: 'Bronzeville',
+                    theme: 'History, Culture, Heritage',
+                    socialIssue: 'Historical Preservation, Racial Justice',
+                    description: 'A powerful tribute to the African American leaders and artists who shaped the Bronzeville community.',
+                    backstory: 'This mural was created as part of a historical preservation project, celebrating the rich cultural heritage of Bronzeville and educating new generations.',
+                    imageUrl: "https://placehold.co/300x200/B0E0E6/333333?text=Bronzeville+Legends",
+                    lat: 41.82,
+                    lng: -87.62,
+                },
+                {
+                    id: 'mural5',
+                    name: 'Logan Square Blooms',
+                    artist: 'Sofia Rodriguez',
+                    neighborhood: 'Logan Square',
+                    theme: 'Nature, Urban Oasis, Growth',
+                    socialIssue: 'Community Beautification, Environmental Awareness',
+                    description: 'A vibrant floral mural that transforms a drab wall into a lush urban garden, attracting pollinators and people alike.',
+                    backstory: 'Commissioned by a local community garden initiative, this mural aims to raise awareness about urban ecology and the importance of green spaces.',
+                    imageUrl: "https://placehold.co/300x200/DDA0DD/333333?text=Logan+Square+Blooms",
+                    lat: 41.92,
+                    lng: -87.70,
+                },
+            ];
+
+            const businessesData = [
+                { name: "Grove Coffee", type: "Café", distance: "0.2 mi", rating: "4.5 (210)", discount: "10% off any coffee", tipLink: "#" },
+                { name: "Page Turners", type: "Bookstore", distance: "0.3 mi", rating: "4.3 (85)", discount: "Free bookmark with purchase", tipLink: "#" },
+                { name: "Green Leaf Market", type: "Grocery", distance: "0.4 mi", rating: "4.4 (130)", discount: "5% off organic produce", tipLink: "#" },
+                { name: "Style Cuts Salon", type: "Salon", distance: "0.5 mi", rating: "4.7 (150)", discount: "15% off first haircut", tipLink: "#" },
+            ];
+
+            const toursData = [
+                {
+                    id: 'tour1',
+                    title: 'Latinx Stories in Pilsen',
+                    theme: 'Culture, History',
+                    description: 'Explore the rich Latinx heritage of Pilsen through its vibrant murals. This tour highlights key artworks and their historical significance.',
+                    audioUrl: '#', // Placeholder for audio
+                    artistInterview: 'Interview with local Pilsen artists on their inspirations.',
+                    checkins: 5,
+                    completed: false,
+                    generatedDescription: '', // To store generated description
+                    loadingDescription: false, // Loading state for description generation
+                },
+                {
+                    id: 'tour2',
+                    title: 'West Town Abstract Art Walk',
+                    theme: 'Art, Modern',
+                    description: 'Discover the contemporary and abstract murals that define West Town\'s artistic landscape.',
+                    audioUrl: '#',
+                    artistInterview: 'Insights from artists pushing the boundaries of urban art.',
+                    checkins: 4,
+                    completed: false,
+                    generatedDescription: '',
+                    loadingDescription: false,
+                },
+                {
+                    id: 'tour3',
+                    title: 'Bronzeville Heritage Trail',
+                    theme: 'History, Civil Rights',
+                    description: 'A journey through Bronzeville\'s historic murals, commemorating its role in the Great Migration and Civil Rights movement.',
+                    audioUrl: '#',
+                    artistInterview: 'Discussions with historians and local artists about the impact of these murals.',
+                    checkins: 6,
+                    completed: false,
+                    generatedDescription: '',
+                    loadingDescription: false,
+                },
+            ];
+
+            // Component for the Artist Profile and Portfolio
+            const ArtistProfile = () => {
+                const handleFollowToggle = () => {
+                    setIsFollowing(!isFollowing);
+                    // In a real app, this would trigger a notification system
+                    if (!isFollowing) {
+                        console.log(`You are now following ${artistData.artistName}!`);
+                    } else {
+                        console.log(`You have unfollowed ${artistData.artistName}.`);
+                    }
+                };
+
+                return (
+                    <div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
+                        <div className="w-full flex justify-start items-center mb-4">
+                            <button onClick={() => setCurrentPage('muralsMap')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <span className="ml-2 text-lg font-semibold">Back</span>
+                        </div>
+
+                        <img src={artistData.muralImage} alt={artistData.muralTitle} className="w-full h-auto rounded-lg mb-4 object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/A7D9C6/333333?text=Image+Not+Found"; }} />
+                        <div className="w-full text-left mb-4">
+                            <h2 className="text-2xl font-bold mb-1">{artistData.muralTitle}</h2>
+                            <p className="text-gray-600 text-sm">{artistData.location} • {artistData.distance}</p>
+                            <p className="text-gray-700 text-sm mt-2 font-medium">Mural Backstory:</p>
+                            <p className="text-gray-600 text-sm">{artistData.muralBackstory}</p>
+                        </div>
+
+                        <div className="w-full text-left mb-6">
+                            <h3 className="text-lg font-semibold mb-2">Artist</h3>
+                            <div className="flex items-center mb-2">
+                                <div className="w-10 h-10 bg-blue-200 text-blue-800 flex items-center justify-center rounded-full font-bold mr-3">
+                                    {artistData.artistName.split(' ').map(n => n[0]).join('')}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-lg">{artistData.artistName}</p>
+                                    <p className="text-gray-700 text-sm">{artistData.artistBio}</p>
+                                </div>
+                            </div>
+                            <a href={artistData.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm block mt-2">Website</a>
+                            <div className="mt-2">
+                                {artistData.socialLinks.map((link, index) => (
+                                    <a key={index} href={link.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm mr-4">
+                                        {link.name}
+                                    </a>
+                                ))}
+                            </div>
+                            {artistData.commissions && (
+                                <p className="text-green-700 text-sm mt-2">Open for Commissions</p>
+                            )}
+                            {artistData.workshops && (
+                                <p className="text-purple-700 text-sm">Offering Workshops</p>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={handleFollowToggle}
+                            className={`w-full py-3 rounded-full font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${isFollowing ? 'bg-gray-400 text-white hover:bg-gray-500 focus:ring-gray-300' : 'bg-[#FF69B4] text-white hover:bg-[#E05C9F] focus:ring-[#FF69B4]'}`}
+                        >
+                            {isFollowing ? 'FOLLOWING' : 'FOLLOW ARTIST'}
+                        </button>
+                        {isFollowing && (
+                            <p className="text-green-600 text-xs mt-2">You'll receive notifications for new work and events!</p>
+                        )}
+                    </div>
+                );
+            };
+
+            // Component for the Murals Map and Nearby listings
+            const MuralsMap = () => {
+                const [searchTerm, setSearchTerm] = React.useState('');
+                const [filterType, setFilterType] = React.useState('all'); // 'all', 'neighborhood', 'artist', 'theme', 'socialIssue'
+                const [muralExplanations, setMuralExplanations] = React.useState({}); // Stores generated explanations
+                const [loadingMuralId, setLoadingMuralId] = React.useState(null); // Stores ID of mural currently loading explanation
+
+                const filteredMurals = muralsData.filter(mural => {
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                    const matchesSearch =
+                        mural.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        mural.artist.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        mural.neighborhood.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        mural.theme.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        mural.socialIssue.toLowerCase().includes(lowerCaseSearchTerm);
+
+                    if (filterType === 'all') {
+                        return matchesSearch;
+                    } else {
+                        return matchesSearch && mural[filterType].toLowerCase().includes(lowerCaseSearchTerm);
+                    }
+                });
+
+                // Function to fetch theme explanation using Gemini API
+                const fetchThemeExplanation = async (muralId, theme) => {
+                    setLoadingMuralId(muralId);
+                    try {
+                        let chatHistory = [];
+                        chatHistory.push({ role: "user", parts: [{ text: `Explain the theme "${theme}" in the context of urban murals in a concise and engaging way.` }] });
+                        const payload = { contents: chatHistory };
+
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            setMuralExplanations(prev => ({ ...prev, [muralId]: text }));
+                        } else {
+                            setMuralExplanations(prev => ({ ...prev, [muralId]: "Could not generate explanation." }));
+                        }
+                    } catch (error) {
+                        console.error("Error fetching theme explanation:", error);
+                        setMuralExplanations(prev => ({ ...prev, [muralId]: "Error generating explanation." }));
+                    } finally {
+                        setLoadingMuralId(null);
+                    }
+                };
+
+                return (
+                    <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
+                        <div className="w-full flex justify-start items-center mb-4">
+                            <button onClick={() => setCurrentPage('missionStatement')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <span className="ml-2 text-lg font-semibold">Murals</span>
+                        </div>
+
+                        <div className="w-full mb-4">
+                            <input
+                                type="text"
+                                placeholder="Search murals (neighborhood, artist, theme...)"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF69B4]"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {['all', 'neighborhood', 'artist', 'theme', 'socialIssue'].map(type => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setFilterType(type)}
+                                        className={`px-3 py-1 text-xs rounded-full ${filterType === type ? 'bg-[#FF69B4] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                    >
+                                        {type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1')}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="w-full h-64 bg-gray-200 rounded-lg mb-4 flex items-center justify-center text-gray-500 text-sm relative overflow-hidden">
+                            {/* Static image of Chicago map - UPDATED to use image_b51a81.png */}
+                            <img src="image_b51a81.png" alt="Map of Chicago" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x256/E0E0E0/666666?text=Map+Not+Available"; }} />
+                            {/* Dynamically place pins based on filteredMurals (simplified visual) */}
+                            {filteredMurals.map((mural, index) => (
+                                <div
+                                    key={mural.id}
+                                    className="absolute w-3 h-3 bg-[#FFD700] rounded-full border border-white" // Using yellow for pins
+                                    style={{
+                                        top: `${20 + (index * 15) % 60}%`, // Distribute pins visually
+                                        left: `${30 + (index * 20) % 50}%`,
+                                    }}
+                                    title={`${mural.name} by ${mural.artist} (${mural.neighborhood})`}
+                                ></div>
+                            ))}
+                        </div>
+
+                        <div className="w-full text-left mb-6">
+                            <h3 className="text-lg font-semibold mb-2">Mural Listings</h3>
+                            {filteredMurals.length > 0 ? (
+                                <ul className="space-y-3">
+                                    {filteredMurals.map(mural => (
+                                        <li key={mural.id} className="p-3 border border-gray-200 rounded-lg">
+                                            <h4 className="font-bold text-lg">{mural.name}</h4>
+                                            <p className="text-gray-700 text-sm">Artist: <span className="text-[#FF69B4] cursor-pointer" onClick={() => setCurrentPage('artistProfile')}>{mural.artist}</span></p>
+                                            <p className="text-gray-700 text-sm">Neighborhood: {mural.neighborhood}</p>
+                                            <p className="text-gray-700 text-sm">Theme: {mural.theme}</p>
+                                            <p className="text-gray-700 text-sm">Social Issue: {mural.socialIssue}</p>
+                                            <p className="text-gray-600 text-sm mt-1">{mural.description}</p>
+                                            <p className="text-gray-600 text-xs mt-1 italic">Backstory: {mural.backstory}</p>
+                                            <button
+                                                onClick={() => fetchThemeExplanation(mural.id, mural.theme)}
+                                                className="mt-2 px-3 py-1 bg-[#7FFF00] text-[#2D404A] text-xs rounded-full hover:bg-[#6EE300] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#7FFF00]"
+                                                disabled={loadingMuralId === mural.id}
+                                            >
+                                                {loadingMuralId === mural.id ? 'Loading...' : '✨ Explain Theme'}
+                                            </button>
+                                            {muralExplanations[mural.id] && (
+                                                <p className="text-gray-800 text-sm mt-2 p-2 bg-green-50 rounded-md border border-green-200">
+                                                    <span className="font-semibold">Theme Explanation:</span> {muralExplanations[mural.id]}
+                                                </p>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500">No murals found matching your search.</p>
+                            )}
+
+                            <h3 className="text-lg font-semibold mb-2 mt-6">Local Business Integration</h3>
+                            <p className="text-[#FF69B4] text-sm mb-3">Businesses Near Murals</p>
+                            {businessesData.map((business, index) => (
+                                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                                    <div>
+                                        <p className="font-medium text-base">{business.name} ({business.type})</p>
+                                        <p className="text-gray-600 text-sm">★★★★★ {business.rating}</p>
+                                        <p className="text-green-700 text-sm font-semibold">Discount: {business.discount}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-gray-500 text-sm">{business.distance}</span>
+                                        <a href={business.tipLink} className="text-[#FF69B4] text-sm hover:underline mt-1">Support Local</a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            // Component for the Mission Statement
+            const MissionStatement = () => (
+                <div className="flex flex-col items-center p-4 bg-[#2D404A] text-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter min-h-[500px] justify-between">
+                    <div className="w-full flex justify-start items-center mb-4">
+                        <button onClick={() => setCurrentPage('muralsMap')} className="text-white hover:text-gray-300 focus:outline-none">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <span className="ml-2 text-lg font-semibold">Mission Statement</span>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center flex-grow justify-center px-4">
+                        {/* Logo Integration */}
+                        <img src="image_b4bce2.png" alt="Common Canvas Logo" className="w-32 h-auto mb-6" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/128x128/FFFFFF/000000?text=Logo"; }} />
+
+                        <h1 className="text-4xl font-extrabold mb-6">COMMON CANVAS</h1>
+                        <p className="text-lg leading-relaxed mb-8">
+                            Common Canvas brings people together through community murals. We support local artists and foster public art that celebrates creativity and diversity.
+                        </p>
+                    </div>
+
+                    <div className="w-full flex flex-col items-center space-y-4 pb-4">
+                        <button className="w-full bg-[#FFD700] text-[#2D404A] py-3 rounded-full font-semibold hover:bg-[#E0B800] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-opacity50">
+                            Donate
+                        </button>
+                        <button className="w-full bg-[#FF69B4] text-white py-3 rounded-full font-semibold hover:bg-[#E05C9F] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF69B4] focus:ring-opacity-50">
+                            Join a Community Mural
+                        </button>
+                        {/* Tagline */}
+                        <p className="text-sm italic mt-4">Your Story, Our City, One Wall at a Time.</p>
+                    </div>
+                </div>
+            );
+
+            // Component for Community Grant & Crowdfunding Hub
+            const GrantHub = () => (
+                <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
+                    <div className="w-full flex justify-start items-center mb-4">
+                        <button onClick={() => setCurrentPage('artistProfile')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <span className="ml-2 text-lg font-semibold">Grant & Crowdfunding</span>
+                    </div>
+
+                    <h2 className="text-2xl font-bold mb-4 text-center">Community Grant & Crowdfunding Hub</h2>
+
+                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-2">Apply for a Grant</h3>
+                        <p className="text-gray-700 mb-4">Artists can apply for various grants to fund their mural projects. Review criteria and submit your proposal.</p>
+                        <button className="w-full bg-[#7FFF00] text-[#2D404A] py-2 rounded-full font-semibold hover:bg-[#6EE300] transition duration-300">
+                            Apply Now
+                        </button>
+                    </div>
+
+                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-2">Raise Funds for Your Mural</h3>
+                        <p className="text-gray-700 mb-4">Create a crowdfunding campaign for your next mural. Share your vision and get support from the community.</p>
+                        <button className="w-full bg-[#FFA500] text-white py-2 rounded-full font-semibold hover:bg-[#E09400] transition duration-300">
+                            Start a Campaign
+                        </button>
+                    </div>
+
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-2">Active Campaigns</h3>
+                        <ul className="space-y-3">
+                            <li className="flex justify-between items-center">
+                                <div>
+                                    <p className="font-medium">"Harmony Wall" by Jane Doe</p>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                                        <div className="bg-[#FF69B4] h-2.5 rounded-full" style={{width: '75%'}}></div>
+                                    </div>
+                                    <p className="text-sm text-gray-600">$7,500 of $10,000 raised</p>
+                                </div>
+                                <span className="text-[#FF69B4] font-semibold">75%</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <div>
+                                    <p className="font-medium">"Cityscape Dream" by John Smith</p>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                                        <div className="bg-[#FF69B4] h-2.5 rounded-full" style={{width: '40%'}}></div>
+                                    </div>
+                                    <p className="text-sm text-gray-600">$2,000 of $5,000 raised</p>
+                                </div>
+                                <span className="text-[#FF69B4] font-semibold">40%</span>
+                            </li>
+                        </ul>
+                        <button className="w-full mt-4 bg-gray-200 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300">
+                            View All Campaigns
+                        </button>
+                    </div>
+                </div>
+            );
+
+            // Component for Neighborhood Activity Dashboard
+            const ActivityDashboard = () => (
+                <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
+                    <div className="w-full flex justify-start items-center mb-4">
+                        <button onClick={() => setCurrentPage('artistProfile')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <span className="ml-2 text-lg font-semibold">Activity Dashboard</span>
+                    </div>
+
+                    <h2 className="text-2xl font-bold mb-4 text-center">Neighborhood Activity Dashboard</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div className="p-4 border border-gray-200 rounded-lg text-center">
+                            <h3 className="text-lg font-semibold text-[#FF69B4]">New Installations</h3>
+                            <p className="text-4xl font-bold mt-2">12</p>
+                            <p className="text-gray-600 text-sm">Last Quarter</p>
+                        </div>
+                        <div className="p-4 border border-gray-200 rounded-lg text-center">
+                            <h3 className="text-lg font-semibold text-[#7FFF00]">Total Murals</h3>
+                            <p className="text-4xl font-bold mt-2">85</p>
+                            <p className="text-gray-600 text-sm">Across City</p>
+                        </div>
+                        <div className="p-4 border border-gray-200 rounded-lg text-center">
+                            <h3 className="text-lg font-semibold text-[#FFA500]">Engagement Score</h3>
+                            <p className="text-4xl font-bold mt-2">7.8</p>
+                            <p className="text-gray-600 text-sm">Out of 10</p>
+                        </div>
+                        <div className="p-4 border border-gray-200 rounded-lg text-center">
+                            <h3 className="text-lg font-semibold text-[#FFD700]">Foot Traffic Increase</h3>
+                            <p className="text-4xl font-bold mt-2">15%</p>
+                            <p className="text-gray-600 text-sm">Near Murals</p>
+                        </div>
+                    </div>
+
+                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-2">Mural Installations by Neighborhood</h3>
+                        <ul className="space-y-2">
+                            <li className="flex justify-between items-center">
+                                <span className="font-medium">Pilsen</span>
+                                <span className="text-gray-700">18 Murals</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="font-medium">West Town</span>
+                                <span className="text-gray-700">15 Murals</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="font-medium">Lower West Side</span>
+                                <span className="text-gray-700">12 Murals</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="font-medium">Near South Side</span>
+                                <span className="text-gray-700">10 Murals</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="font-medium">Bronzeville</span>
+                                <span className="text-gray-700">9 Murals</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="font-medium">Logan Square</span>
+                                <span className="text-gray-700">11 Murals</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-2">Local Business Activity Impact</h3>
+                        <p className="text-gray-700 mb-2">Data indicates a positive correlation between mural installations and increased local business revenue.</p>
+                        <ul className="list-disc list-inside text-gray-700">
+                            <li>Average 8% increase in revenue for businesses within 0.5 miles of a new mural.</li>
+                            <li>Increased foot traffic leads to more customer engagement.</li>
+                        </ul>
+                        <button className="w-full mt-4 bg-[#FF69B4] text-white py-2 rounded-full font-semibold hover:bg-[#E05C9F] transition duration-300">
+                            View Detailed Report
+                        </button>
+                    </div>
+                </div>
+            );
+
+            // Component for Self-Guided Mural Tours
+            const SelfGuidedTours = () => {
+                const [completedBadges, setCompletedBadges] = React.useState([]);
+                const [tours, setTours] = React.useState(toursData); // Use state to manage tours data for generated descriptions
+
+                const handleCheckIn = (tourId) => {
+                    if (!completedBadges.includes(tourId)) {
+                        setCompletedBadges([...completedBadges, tourId]);
+                        console.log(`Congratulations! You earned a badge for completing a section of tour ${tourId}!`);
+                    } else {
+                        console.log(`You've already checked in for this section of tour ${tourId}.`);
+                    }
+                };
+
+                // Function to fetch tour description using Gemini API
+                const fetchTourDescription = async (tourId, title, theme, description) => {
+                    setTours(prevTours => prevTours.map(tour =>
+                        tour.id === tourId ? { ...tour, loadingDescription: true } : tour
+                    ));
+                    try {
+                        let chatHistory = [];
+                        chatHistory.push({ role: "user", parts: [{ text: `Generate a more engaging and detailed description for a self-guided mural tour titled "${title}" with the theme "${theme}". The current description is: "${description}". Make it appealing to art enthusiasts and tourists.` }] });
+                        const payload = { contents: chatHistory };
+
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            setTours(prevTours => prevTours.map(tour =>
+                                tour.id === tourId ? { ...tour, generatedDescription: text } : tour
+                            ));
+                        } else {
+                            setTours(prevTours => prevTours.map(tour =>
+                                tour.id === tourId ? { ...tour, generatedDescription: "Could not generate description." } : tour
+                            ));
+                        }
+                    } catch (error) {
+                        console.error("Error fetching tour description:", error);
+                        setTours(prevTours => prevTours.map(tour =>
+                            tour.id === tourId ? { ...tour, generatedDescription: "Error generating description." } : tour
+                        ));
+                    } finally {
+                        setTours(prevTours => prevTours.map(tour =>
+                            tour.id === tourId ? { ...tour, loadingDescription: false } : tour
+                        ));
+                    }
+                };
+
+                return (
+                    <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto my-4 font-inter">
+                        <div className="w-full flex justify-start items-center mb-4">
+                            <button onClick={() => setCurrentPage('muralsMap')} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <span className="ml-2 text-lg font-semibold">Self-Guided Tours</span>
+                        </div>
+
+                        <h2 className="text-2xl font-bold mb-4 text-center">Self-Guided Mural Tours</h2>
+
+                        {tours.map(tour => (
+                            <div key={tour.id} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                                <h3 className="text-xl font-semibold mb-2">{tour.title}</h3>
+                                <p className="text-gray-700 text-sm mb-2">Theme: {tour.theme}</p>
+                                <p className="text-gray-600 mb-3">{tour.description}</p>
+                                {tour.generatedDescription && (
+                                    <p className="text-gray-800 text-sm mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
+                                        <span className="font-semibold">Generated Description:</span> {tour.generatedDescription}
+                                    </p>
+                                )}
+                                <button
+                                    onClick={() => fetchTourDescription(tour.id, tour.title, tour.theme, tour.description)}
+                                    className="mt-2 px-3 py-1 bg-[#7FFF00] text-[#2D404A] text-xs rounded-full hover:bg-[#6EE300] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#7FFF00]"
+                                    disabled={tour.loadingDescription}
+                                >
+                                    {tour.loadingDescription ? 'Generating...' : '✨ Generate Tour Description'}
+                                </button>
+                                <div className="flex items-center mt-3 mb-3">
+                                    <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2zm0 0H6a2 2 0 00-2 2v13a2 2 0 002 2h3m2-12l-3-3m3 3l3 3m-3-3l-3 3m3-3v3m0 0l-3-3m3 3l3 3m-3-3v-3"></path></svg>
+                                    <a href={tour.audioUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF69B4] hover:underline text-sm">Listen to Audio Narration</a>
+                                </div>
+                                <p className="text-gray-700 text-sm mb-3">Artist Interview: {tour.artistInterview}</p>
+                                <button
+                                    onClick={() => handleCheckIn(tour.id)}
+                                    className={`w-full py-2 rounded-full font-semibold transition duration-300 ${completedBadges.includes(tour.id) ? 'bg-green-500 text-white' : 'bg-[#FFA500] text-white hover:bg-[#E09400]'}`}
+                                >
+                                    {completedBadges.includes(tour.id) ? 'Checked In! (Badge Earned)' : `Check-in (${tour.checkins} points)`}
+                                </button>
+                            </div>
+                        ))}
+                        <div className="mt-4 p-4 border border-gray-200 rounded-lg text-center">
+                            <h3 className="text-xl font-semibold mb-2">Your Badges</h3>
+                            {completedBadges.length > 0 ? (
+                                <div className="flex flex-wrap justify-center gap-3">
+                                    {completedBadges.map(badgeId => (
+                                        <div key={badgeId} className="bg-[#FFD700] p-2 rounded-full text-[#2D404A] font-bold text-xs shadow-md">
+                                            {toursData.find(t => t.id === badgeId)?.title.split(' ').map(n => n[0]).join('')} Badge
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm">Complete tours to earn badges!</p>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+
+            return (
+                <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4 font-inter">
+                    {/* Global Navigation */}
+                    <div className="w-full max-w-full flex justify-around p-3 bg-white rounded-full shadow-lg mb-6">
+                        <button
+                            onClick={() => setCurrentPage('artistProfile')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'artistProfile' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            Artist Profile
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage('muralsMap')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'muralsMap' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            Murals Map
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage('missionStatement')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'missionStatement' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            Mission
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage('grantHub')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'grantHub' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            Grants
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage('activityDashboard')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'activityDashboard' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            Dashboard
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage('selfGuidedTours')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${currentPage === 'selfGuidedTours' ? 'bg-[#FF69B4] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            Tours
+                        </button>
+                    </div>
+
+                    {/* Render current page based on state */}
+                    {currentPage === 'artistProfile' && <ArtistProfile />}
+                    {currentPage === 'muralsMap' && <MuralsMap />}
+                    {currentPage === 'missionStatement' && <MissionStatement />}
+                    {currentPage === 'grantHub' && <GrantHub />}
+                    {currentPage === 'activityDashboard' && <ActivityDashboard />}
+                    {currentPage === 'selfGuidedTours' && <SelfGuidedTours />}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
